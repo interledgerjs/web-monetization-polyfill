@@ -1,6 +1,15 @@
 # Web Monetization Polyfill
 > Use web monetization without a browser extension
 
+## Test an Example Page
+
+```
+npm install
+node index.js &
+http-server -p 8090 example
+open http://localhost:8090
+```
+
 ## How it Works
 
 ### Register Web Monetization Handler
