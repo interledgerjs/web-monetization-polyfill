@@ -7,5 +7,8 @@ function registerWebMonetizationHandler (handlerUri, destUri) {
 }
 
 function createIlpConnection () {
-  console.log('todo')
+  // TODO: inject the stream library
+  // TODO: inject the iframe
+  // TODO: create the iframe plugin
+  // TODO: instantiate the stream and return it
 }
