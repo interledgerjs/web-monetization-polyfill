@@ -1,7 +1,7 @@
-function registerWebMonetizationHandler (handlerUri) {
-  const dest = encodeURIComponent(window.location.href)
+function registerWebMonetizationHandler (handlerUri, destUri) {
+  const dest = encodeURIComponent(destUri || window.location.href)
   const handler = encodeURIComponent(handlerUri)
-  window.location = 'http://local.sharafian.com/register' +
+  window.location = 'http://webmonetization.sharafian.com:8080/register' +
     '?dest=' + dest +
     '&handler=' + handler
 }
