@@ -11,7 +11,7 @@ window.registerWebMonetizationHandler = function registerWebMonetizationHandler 
 }
 
 window.monetize = window.monetize || {}
-window.monetize.createIlpConnection = function createIlpConnection ({
+window.monetize.createIlpConnection = async function createIlpConnection ({
   destinationAccount,
   sharedSecret
 }) {
@@ -32,7 +32,11 @@ window.monetize.createIlpConnection = function createIlpConnection ({
   wmFrame.style = 'display:none;'
   document.body.appendChild(handlerFrame)
 
-  // TODO: inject stream.js
+  // TODO: does this actually work?
+  // TODO: can this be async with other fetches?
+  const streamScript = document.createElement('script')
+  streamScript.src = WEB_MONETIZATION_DOMAIN + '/stream'
+  document.body.appendChild(streamScript)
 
   return window.monetize._createConnection({
     iframe,

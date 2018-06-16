@@ -5,12 +5,12 @@ const fs = require('fs-extra')
 
 router.get('/', async ctx => {
   ctx.set('Content-Type', 'text/javascript')
-  ctx.body = await fs.readFile('./src/index.js', 'utf8')
+  ctx.body = await fs.readFile('./dist/index.js', 'utf8')
 })
 
 router.get('/register.js', async ctx => {
   ctx.set('Content-Type', 'text/javascript')
-  ctx.body = await fs.readFile('./src/register.js', 'utf8')
+  ctx.body = await fs.readFile('./dist/register.js', 'utf8')
 })
 
 router.get('/register', async ctx => {
@@ -20,7 +20,12 @@ router.get('/register', async ctx => {
 
 router.get('/iframe.js', async ctx => {
   ctx.set('Content-Type', 'text/javascript')
-  ctx.body = await fs.readFile('./src/iframe.js', 'utf8')
+  ctx.body = await fs.readFile('./dist/iframe.js', 'utf8')
+})
+
+router.get('/stream.js', async ctx => {
+  ctx.set('Content-Type', 'text/javascript')
+  ctx.body = await fs.readFile('./dist/stream.js', 'utf8')
 })
 
 router.get('/iframe', async ctx => {
