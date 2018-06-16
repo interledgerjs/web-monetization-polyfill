@@ -20,12 +20,23 @@ open http://localhost:8090
 
 ### Register Web Monetization Handler
 
+```
+window.registerWebMonetizationHandler(handlerUrl: string, redirect?: string)
+```
+
 - A page pulls in the polyfill script.
 - The page calls `registerWebMonetizationPolyfill` with the url of their web monetization handler.
 - The user is redirected to the web monetization polyfill site and asked to confirm.
 - The user confirms and is redirected back.
 
 ### Monetize a Web Page
+
+```
+async window.monetize.createIlpConnection({
+  destinationAccount: string,
+  sharedSecret: string
+})
+```
 
 - A page pulls in the polyfill script.
 - The page calls `createIlpConnection` with the ILP address and shared secret to use.
