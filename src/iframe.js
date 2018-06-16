@@ -4,5 +4,5 @@ function receiveMessage (event) {
   const id = event.data.id
   const handler = window.localStorage.getItem('handler')
 
-  window.top.postMessage({ id, data: { handler } })
+  window.top.postMessage({ id, data: { handler } }, '*')
 }

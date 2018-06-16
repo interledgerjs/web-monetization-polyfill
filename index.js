@@ -23,7 +23,7 @@ router.get('/iframe.js', async ctx => {
   ctx.body = await fs.readFile('./dist/iframe.js', 'utf8')
 })
 
-router.get('/stream.js', async ctx => {
+router.get('/stream', async ctx => {
   ctx.set('Content-Type', 'text/javascript')
   ctx.body = await fs.readFile('./dist/stream.js', 'utf8')
 })

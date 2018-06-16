@@ -18,7 +18,7 @@ async function frameCall (iframe, data = {}, timeout = 5000) {
 
       window.addEventListener('message', messageListener, false)
     }),
-    new Promise((reject) => {
+    new Promise((resolve, reject) => {
       timer = setTimeout(() => {
         reject(new Error('request to iframe timed out.' +
           ' id=' + id +
@@ -27,7 +27,7 @@ async function frameCall (iframe, data = {}, timeout = 5000) {
     })
   ])
 
-  iframe.postMessage({ id, data })
+  iframe.contentWindow.postMessage({ id, data }, '*')
   return result
 }
 
