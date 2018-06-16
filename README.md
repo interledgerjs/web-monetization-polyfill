@@ -1,6 +1,11 @@
 # Web Monetization Polyfill
 > Use web monetization without a browser extension
 
+- [Test an Example Page](#test-an-example-page)
+- [How it Works](#how-it-works)
+  - [Register Web Monetization Handler](#register-web-monetization-handler)
+  - [Monetize a Web Page](#monetize-a-web-page)
+
 ## Test an Example Page
 
 ```
