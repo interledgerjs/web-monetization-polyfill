@@ -6,10 +6,11 @@ async function frameCall (iframe, data = {}, timeout = 5000) {
   const result = Promise.race([
     new Promise((resolve, reject) => {
       function messageListener (event) {
-        if (event.data && typeof event.data === 'object' && event.data.id === id) {
+        if (event.data && typeof event.data === 'object' && event.data.id === id && (event.data.response || event.data.error)) {
           window.removeEventListener('message', messageListener)
-          if (event.data.data) {
-            resolve(event.data.data)
+          console.log('event.data', event.data)
+          if (event.data.response) {
+            resolve(event.data.response)
           } else {
             reject(new Error(event.data.error || 'an error occured'))
           }
@@ -27,7 +28,7 @@ async function frameCall (iframe, data = {}, timeout = 5000) {
     })
   ])
 
-  iframe.contentWindow.postMessage({ id, data }, '*')
+  iframe.contentWindow.postMessage({ id, request: data }, '*')
   return result
 }
 
