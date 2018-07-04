@@ -36,4 +36,4 @@ router.get('/iframe', async ctx => {
 app
   .use(router.routes())
   .use(router.allowedMethods())
-  .listen(8080)
+  .listen(process.env.PORT || 8080)
