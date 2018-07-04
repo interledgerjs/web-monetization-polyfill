@@ -1,6 +1,6 @@
 // TODO: should some of these libraries be deferred too?
 const frameCall = require('./frame-call')
-const WEB_MONETIZATION_DOMAIN = process.env.WEB_MONETIZATION_DOMAIN || 'https://webmonetization.sharafian.com:8080'
+const WEB_MONETIZATION_DOMAIN = 'https://polyfill.webmonetization-test.com'
 
 function loadElement (el) {
   return new Promise(resolve => el.addEventListener('load', resolve))
