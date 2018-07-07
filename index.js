@@ -8,6 +8,11 @@ router.get('/', async ctx => {
   ctx.body = await fs.readFile('./dist/index.js', 'utf8')
 })
 
+router.get('/signin.css', async ctx => {
+  ctx.set('Content-Type', 'text/css')
+  ctx.body = await fs.readFile('./static/signin.css', 'utf8')
+})
+
 router.get('/register.js', async ctx => {
   ctx.set('Content-Type', 'text/javascript')
   ctx.body = await fs.readFile('./dist/register.js', 'utf8')

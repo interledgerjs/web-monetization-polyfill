@@ -6,11 +6,13 @@ function loadElement (el) {
   return new Promise(resolve => el.addEventListener('load', resolve))
 }
 
-window.registerWebMonetizationHandler = function registerWebMonetizationHandler (handlerUri, destUri) {
+window.registerWebMonetizationHandler = function registerWebMonetizationHandler ({ handlerUri, destUri, cancelUri, name }) {
   const dest = encodeURIComponent(destUri || window.location.href)
   const handler = encodeURIComponent(handlerUri)
   window.location = WEB_MONETIZATION_DOMAIN + '/register' +
     '?dest=' + dest +
+    (cancelUri ? ('&cancel=' + encodeURIComponent(cancelUri)) : '') +
+    (name ? ('&name=' + encodeURIComponent(name)) : '') +
     '&handler=' + handler
 }
 

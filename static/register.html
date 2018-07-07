@@ -1,14 +1,33 @@
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
   <title>Web Monetization</title>
-  <meta charset="utf-8" />
+  <link href="" rel="stylesheet">
+  <link
+    rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous">
+  <link href="/signin.css" rel="stylesheet">
   <script src="/register.js"></script>
 </head>
-<body>
-  <div id="confirm-div" style="display:hidden;">
-    <p id="existing"></p>
-    <p>Set <span id="handler"></span> as your ILP handler?</p>
-    <p><button id="confirm">Confirm</button></p>
-  </div>
+<body class="text-center">
+  <form class="form-signin" id="confirm-div" style="display:none">
+    <img
+      class="mb-4"
+      src="https://interledger.org/assets/ilp_logo.svg"
+      alt="" width="144" height="144">
+    <h1 class="h3 mb-3 font-weight-normal">Set your handler</h1>
+    <p class="mb-3">This site will be able to process Web Monetization requests in this browser.</p>
+    <div class="card mb-3 text-left">
+      <div class="card-body">
+        <h5 class="card-title" id="handler-name"></h5>
+        <p class="card-text" id="handler"></p>
+      </div>
+    </div>
+    <button class="btn btn-lg btn-primary btn-block" id="confirm">Confirm</button>
+    <button class="btn btn-lg btn-secondary btn-block" id="cancel">Cancel</button>
+  </form>
 </body>
 </html>

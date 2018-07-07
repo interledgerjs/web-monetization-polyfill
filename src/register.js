@@ -1,15 +1,12 @@
 window.onload = function () {
   const div = document.getElementById('confirm-div')
   const span = document.getElementById('handler')
+  const name = document.getElementById('handler-name')
   const confirm = document.getElementById('confirm')
+  const cancel = document.getElementById('cancel')
   const params = new URLSearchParams(window.location.search)
-  const existing = window.localStorage.getItem('handler')
-  const existingText = document.getElementById('existing')
   const handler = params.get('handler')
-
-  if (existing) {
-    existingText.innerText = 'existing handler is ' + existing
-  }
+  const handlerName = params.get('name')
 
   confirm.onclick = function (e) {
     e.preventDefault()
@@ -18,6 +15,13 @@ window.onload = function () {
     window.location = params.get('dest')
   }
 
-  span.innerText = handler
+  cancel.onclick = function (e) {
+    e.preventDefault()
+
+    window.location = params.get('cancel')
+  }
+
+  span.innerText = new URL(handler).host
+  name.innerText = handlerName
   div.style = '' 
 }
