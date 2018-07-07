@@ -3,6 +3,7 @@ const frameCall = require('./frame-call')
 class PluginIframe {
   constructor ({ handlerFrame }) {
     this.iframe = handlerFrame
+    this.connected = false
   }
 
   async connect () {
@@ -24,13 +25,15 @@ class PluginIframe {
         }, '*')
       }
     }, false)
+    this.connected = true
   }
 
   async disconnect () {
+    this.connected = false
   }
 
   async isConnected () {
-    return true
+    return this.connected
   }
 
   registerDataHandler (handler) {
@@ -43,6 +46,7 @@ class PluginIframe {
         const response = await frameCall(this.iframe, data.toString('base64'))
         return Buffer.from(response, 'base64')
       } catch (e) {
+        // TODO: should this just end finally and let STREAM handle it?
         console.error(e)
         await new Promise(resolve => setTimeout(resolve, 2000))
       }
