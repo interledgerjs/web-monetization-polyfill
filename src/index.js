@@ -16,6 +16,13 @@ window.registerWebMonetizationHandler = function registerWebMonetizationHandler 
     '&handler=' + handler
 }
 
+class NoHandlerRegisteredError extends Error {
+  constructor (...args) {
+    super(...args)
+    this.name = 'NoHandlerRegisteredError'
+  }
+}
+
 window.monetize = window.monetize || {}
 window.monetize.createIlpConnection = async function createIlpConnection ({
   destinationAccount,
@@ -41,6 +48,11 @@ window.monetize.createIlpConnection = async function createIlpConnection ({
   console.log('sending the call')
   const { handler } = await frameCall(wmFrame)
   document.body.removeChild(wmFrame)
+
+  if (!handler) {
+    throw new NoHandlerRegisteredError('no Web Monetization handler has been registered.')
+  }
+
   console.log('got handler URL:', handler)
 
   // mount handler iframe
