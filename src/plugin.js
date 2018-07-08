@@ -1,9 +1,18 @@
 const frameCall = require('./frame-call')
+const ILDCP = require('ilp-protocol-ildcp')
+const IlpPacket = require('ilp-packet')
+const crypto = require('crypto')
+const base64url = buf => buf
+  .toString('base64')
+  .replace(/=/g, '')
+  .replace(/\//g, '_')
+  .replace(/\+/g, '-')
 
 class PluginIframe {
   constructor ({ handlerFrame }) {
     this.iframe = handlerFrame
     this.connected = false
+    this.pluginId = base64url(crypto.randomBytes(8))
   }
 
   async connect () {
@@ -12,7 +21,15 @@ class PluginIframe {
       if (!request) return
 
       try {
-        const response = await this.handler(Buffer.from(request, 'base64'))
+        const requestBuffer = Buffer.from(request, 'base64')
+        const parsed = IlpPacket.deserializeIlpPrepare(requestBuffer)
+
+        // just ignore the packets that aren't for us
+        if (!parsed.destination.startsWith(this.ildcp.clientAddress)) {
+          return
+        }
+
+        const response = await this.handler(requestBuffer)
         this.iframe.contentWindow.postMessage({
           id,
           response: response.toString('base64')
@@ -27,6 +44,8 @@ class PluginIframe {
     }
 
     window.addEventListener('message', this.messageListener, false)
+    this.ildcp = await ILDCP.fetch(this.sendData.bind(this))
+    this.ildcp.clientAddress += '.' + this.pluginId
     this.connected = true
   }
 
@@ -48,6 +67,13 @@ class PluginIframe {
   }
 
   async sendData (data) {
+    if (this.ildcp) {
+      const parsed = IlpPacket.deserializeIlpPrepare(data)
+      if (parsed.destination === 'peer.config') {
+        return ILDCP.serializeIldcpResponse(this.ildcp)
+      }
+    }
+
     while (true) {
       try {
         const response = await frameCall(this.iframe, data.toString('base64'))
