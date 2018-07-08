@@ -21,6 +21,15 @@ window.monetize.createIlpConnection = async function createIlpConnection ({
   destinationAccount,
   sharedSecret
 }) {
+  if (window.monetize._createConnection) {
+    const handlerFrame = window.monetize._handlerFrame
+    return window.monetize._createConnection({
+      handlerFrame,
+      destinationAccount,
+      sharedSecret
+    })
+  }
+
   // mount the iframe to webmonetization.org
   const wmFrame = document.createElement('iframe')
   wmFrame.src = WEB_MONETIZATION_DOMAIN + '/iframe'
@@ -35,7 +44,7 @@ window.monetize.createIlpConnection = async function createIlpConnection ({
   console.log('got handler URL:', handler)
 
   // mount handler iframe
-  const handlerFrame = document.createElement('iframe')
+  const handlerFrame = window.monetize._handlerFrame = document.createElement('iframe')
   handlerFrame.src = handler
   handlerFrame.style = 'display:none;'
   document.body.appendChild(handlerFrame)
