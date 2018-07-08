@@ -7,7 +7,7 @@ class PluginIframe {
   }
 
   async connect () {
-    window.addEventListener('message', async (event) => {
+    this.messageListener = async (event) => {
       const { id, request } = event.data
       if (!request) return
 
@@ -24,11 +24,14 @@ class PluginIframe {
           error: e.message
         }, '*')
       }
-    }, false)
+    }
+
+    window.addEventListener('message', this.messageListener, false)
     this.connected = true
   }
 
   async disconnect () {
+    window.removeEventListener('message', this.messageListener)
     this.connected = false
   }
 
@@ -40,7 +43,7 @@ class PluginIframe {
     this.handler = handler
   }
 
-  deregisterDataHandler (handler) {
+  deregisterDataHandler () {
     delete this.handler
   }
 
