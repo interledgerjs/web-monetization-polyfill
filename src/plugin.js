@@ -40,6 +40,10 @@ class PluginIframe {
     this.handler = handler
   }
 
+  deregisterDataHandler (handler) {
+    delete this.handler
+  }
+
   async sendData (data) {
     while (true) {
       try {
