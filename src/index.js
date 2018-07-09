@@ -16,22 +16,15 @@ window.registerWebMonetizationHandler = function registerWebMonetizationHandler 
     '&handler=' + handler
 }
 
-class NoHandlerRegisteredError extends Error {
-  constructor (...args) {
-    super(...args)
-    this.name = 'NoHandlerRegisteredError'
-  }
-}
-
 window.monetize = window.monetize || {}
 window.monetize.createIlpConnection = async function createIlpConnection ({
   destinationAccount,
   sharedSecret
 }) {
   if (window.monetize._createConnection) {
-    const handlerFrame = window.monetize._handlerFrame
+    const wmFrame = window.monetize._wmFrame
     return window.monetize._createConnection({
-      handlerFrame,
+      handlerFrame: wmFrame,
       destinationAccount,
       sharedSecret
     })
@@ -39,42 +32,31 @@ window.monetize.createIlpConnection = async function createIlpConnection ({
 
   // mount the iframe to webmonetization.org
   const wmFrame = document.createElement('iframe')
+  window.monetize._wmFrame = wmFrame
   wmFrame.src = WEB_MONETIZATION_DOMAIN + '/iframe'
   wmFrame.style = 'display:none;'
   document.body.appendChild(wmFrame)
-  await loadElement(wmFrame)
-
-  // retrieve handler URL and remove iframe
-  console.log('sending the call')
-  const { handler } = await frameCall(wmFrame)
-  document.body.removeChild(wmFrame)
-
-  if (!handler) {
-    throw new NoHandlerRegisteredError('no Web Monetization handler has been registered.')
-  }
-
-  console.log('got handler URL:', handler)
-
-  // mount handler iframe
-  const handlerFrame = window.monetize._handlerFrame = document.createElement('iframe')
-  handlerFrame.src = handler
-  handlerFrame.style = 'display:none;'
-  document.body.appendChild(handlerFrame)
 
   // pull in the STREAM library
   const streamScript = document.createElement('script')
   streamScript.src = WEB_MONETIZATION_DOMAIN + '/stream'
   document.body.appendChild(streamScript)
 
+  const prepareHandler = async () => {
+    await loadElement(wmFrame)
+    await frameCall(wmFrame, {}, 'connect')
+  }
+
+  // load STREAM while loading wmFrame and handler
   await Promise.all([
-    loadElement(handlerFrame),
+    prepareHandler(),
     loadElement(streamScript)
   ])
 
   // clean up the script element and init connection
   document.body.removeChild(streamScript)
   return window.monetize._createConnection({
-    handlerFrame,
+    handlerFrame: wmFrame,
     destinationAccount,
     sharedSecret
   })
