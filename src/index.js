@@ -1,6 +1,6 @@
 // TODO: should some of these libraries be deferred too?
 const frameCall = require('./frame-call')
-const WEB_MONETIZATION_DOMAIN = 'https://polyfill.webmonetization-test.com'
+const WEB_MONETIZATION_DOMAIN = 'https://polyfill.webmonetization.org'
 
 function loadElement (el) {
   return new Promise(resolve => el.addEventListener('load', resolve))
@@ -39,7 +39,7 @@ window.monetize.createIlpConnection = async function createIlpConnection ({
 
   // pull in the STREAM library
   const streamScript = document.createElement('script')
-  streamScript.src = WEB_MONETIZATION_DOMAIN + '/stream.html'
+  streamScript.src = WEB_MONETIZATION_DOMAIN + '/stream.js'
   document.body.appendChild(streamScript)
 
   const prepareHandler = async () => {
