@@ -9,7 +9,7 @@ function loadElement (el) {
 window.registerWebMonetizationHandler = function registerWebMonetizationHandler ({ handlerUri, destUri, cancelUri, name }) {
   const dest = encodeURIComponent(destUri || window.location.href)
   const handler = encodeURIComponent(handlerUri)
-  window.location = WEB_MONETIZATION_DOMAIN + '/register' +
+  window.location = WEB_MONETIZATION_DOMAIN + '/register.html' +
     '?dest=' + dest +
     (cancelUri ? ('&cancel=' + encodeURIComponent(cancelUri)) : '') +
     (name ? ('&name=' + encodeURIComponent(name)) : '') +
@@ -33,13 +33,13 @@ window.monetize.createIlpConnection = async function createIlpConnection ({
   // mount the iframe to webmonetization.org
   const wmFrame = document.createElement('iframe')
   window.monetize._wmFrame = wmFrame
-  wmFrame.src = WEB_MONETIZATION_DOMAIN + '/iframe'
+  wmFrame.src = WEB_MONETIZATION_DOMAIN + '/iframe.html'
   wmFrame.style = 'display:none;'
   document.body.appendChild(wmFrame)
 
   // pull in the STREAM library
   const streamScript = document.createElement('script')
-  streamScript.src = WEB_MONETIZATION_DOMAIN + '/stream'
+  streamScript.src = WEB_MONETIZATION_DOMAIN + '/stream.html'
   document.body.appendChild(streamScript)
 
   const prepareHandler = async () => {
