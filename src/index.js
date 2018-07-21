@@ -7,7 +7,8 @@ function loadElement (el) {
   return new Promise(resolve => el.addEventListener('load', resolve))
 }
 
-window.registerWebMonetizationHandler = function registerWebMonetizationHandler ({ handlerUri, destUri, cancelUri, name }) {
+window.WebMonetization = window.WebMonetization || {}
+window.WebMonetization.register = function registerWebMonetizationHandler ({ handlerUri, destUri, cancelUri, name }) {
   const dest = encodeURIComponent(destUri || window.location.href)
   const handler = encodeURIComponent(handlerUri)
   window.location = WEB_MONETIZATION_DOMAIN + '/register.html' +
@@ -17,14 +18,13 @@ window.registerWebMonetizationHandler = function registerWebMonetizationHandler 
     '&handler=' + handler
 }
 
-window.monetize = window.monetize || {}
-window.monetize.createIlpConnection = async function createIlpConnection ({
+window.WebMonetization.monetize = window.WebMonetization.monetize || async function createIlpConnection ({
   destinationAccount,
   sharedSecret
 }) {
-  if (window.monetize._createConnection) {
-    const wmFrame = window.monetize._wmFrame
-    return window.monetize._createConnection({
+  if (window.WebMonetization._createConnection) {
+    const wmFrame = window.WebMonetization._wmFrame
+    return window.WebMonetization._createConnection({
       handlerFrame: wmFrame,
       destinationAccount,
       sharedSecret
@@ -33,7 +33,7 @@ window.monetize.createIlpConnection = async function createIlpConnection ({
 
   // mount the iframe to webmonetization.org
   const wmFrame = document.createElement('iframe')
-  window.monetize._wmFrame = wmFrame
+  window.WebMonetization._wmFrame = wmFrame
   wmFrame.src = WEB_MONETIZATION_DOMAIN + '/iframe.html'
   wmFrame.style = 'display:none;'
   document.body.appendChild(wmFrame)
@@ -56,7 +56,7 @@ window.monetize.createIlpConnection = async function createIlpConnection ({
 
   // clean up the script element and init connection
   document.body.removeChild(streamScript)
-  return window.monetize._createConnection({
+  return window.WebMonetization._createConnection({
     handlerFrame: wmFrame,
     destinationAccount,
     sharedSecret

@@ -2,8 +2,8 @@ const IlpStream = require('ilp-protocol-stream')
 const WebIlpConnection = require('./web-connection')
 const Plugin = require('./plugin')
 
-window.monetize = window.monetize || {}
-window.monetize._createConnection = async function ({
+window.WebMonetization = window.WebMonetization || {}
+window.WebMonetization._createConnection = async function ({
   handlerFrame,
   destinationAccount,
   sharedSecret
