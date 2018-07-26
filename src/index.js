@@ -8,14 +8,31 @@ function loadElement (el) {
 }
 
 window.WebMonetization = window.WebMonetization || {}
-window.WebMonetization.register = function registerWebMonetizationHandler ({ handlerUri, destUri, cancelUri, name }) {
-  const dest = encodeURIComponent(destUri || window.location.href)
+window.WebMonetization.register = function registerWebMonetizationHandler ({ handlerUri, name }) {
   const handler = encodeURIComponent(handlerUri)
-  window.location = WEB_MONETIZATION_DOMAIN + '/register.html' +
-    '?dest=' + dest +
-    (cancelUri ? ('&cancel=' + encodeURIComponent(cancelUri)) : '') +
-    (name ? ('&name=' + encodeURIComponent(name)) : '') +
-    '&handler=' + handler
+  const iframeUrl = WEB_MONETIZATION_DOMAIN + '/register.html' +
+    '?handler=' + handler +
+    (name ? ('&name=' + encodeURIComponent(name)) : '')
+
+  // TODO: make sure this can't be covered up or clickjacked
+  const registerFrame = document.createElement('iframe')
+  registerFrame.frameBorder = '0'
+  registerFrame.style = 'position:fixed;top:0;left:0;height:100%;width:100%;margin:0;padding:0;z-index:101;'
+  registerFrame.src = iframeUrl
+  document.body.appendChild(registerFrame)
+
+  return new Promise((resolve, reject) => {
+    function confirmOrCancelHandler (ev) {
+      if (ev.origin !== WEB_MONETIZATION_DOMAIN) return
+
+      const notification = ev.data.notification
+      window.removeEventListener('message', confirmOrCancelHandler)
+      document.body.removeChild(registerFrame)
+      resolve(notification === 'confirm')
+    }
+
+    window.addEventListener('message', confirmOrCancelHandler)
+  })
 }
 
 window.WebMonetization.monetize = window.WebMonetization.monetize || async function createIlpConnection ({
