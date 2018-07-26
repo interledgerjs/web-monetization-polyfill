@@ -12,13 +12,13 @@ window.onload = function () {
     e.preventDefault()
 
     window.localStorage.setItem('handler', handler)
-    window.location = params.get('dest')
+    window.parent.postMessage({ notification: 'confirm' }, '*')
   }
 
   cancel.onclick = function (e) {
     e.preventDefault()
 
-    window.location = params.get('cancel')
+    window.parent.postMessage({ notification: 'cancel' }, '*')
   }
 
   span.innerText = new URL(handler).host
