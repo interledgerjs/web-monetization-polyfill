@@ -38,6 +38,16 @@ router.get('/iframe.html', async ctx => {
   ctx.body = await fs.readFile('./static/iframe.html', 'utf8')
 })
 
+router.get('/is-registered.html', async ctx => {
+  ctx.set('Content-Type', 'text/html')
+  ctx.body = await fs.readFile('./static/is-registered.html', 'utf8')
+})
+
+router.get('/is-registered.js', async ctx => {
+  ctx.set('Content-Type', 'text/html')
+  ctx.body = await fs.readFile('./dist/is-registered.js', 'utf8')
+})
+
 app
   .use(router.routes())
   .use(router.allowedMethods())

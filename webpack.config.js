@@ -9,7 +9,8 @@ module.exports = {
     'index': './src/index.js',
     'stream': './src/stream.js',
     'iframe': './src/iframe.js',
-    'register': './src/register.js'
+    'register': './src/register.js',
+    'is-registered': './src/is-registered.js'
   },
 
   output: {

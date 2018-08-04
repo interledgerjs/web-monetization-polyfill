@@ -8,7 +8,7 @@ function loadElement (el) {
 }
 
 window.WebMonetization = window.WebMonetization || {}
-window.WebMonetization.register = function registerWebMonetizationHandler ({ handlerUri, name }) {
+window.WebMonetization.register = window.WebMonetization.register || function registerWebMonetizationHandler ({ handlerUri, name }) {
   const handler = encodeURIComponent(handlerUri)
   const iframeUrl = WEB_MONETIZATION_DOMAIN + '/register.html' +
     '?handler=' + handler +
@@ -33,6 +33,18 @@ window.WebMonetization.register = function registerWebMonetizationHandler ({ han
 
     window.addEventListener('message', confirmOrCancelHandler)
   })
+}
+
+window.WebMonetization.isRegistered = window.WebMonetization.isRegistered || async function isRegistered () {
+  const isRegisteredFrame = document.createElement('iframe')
+  isRegisteredFrame.src = WEB_MONETIZATION_DOMAIN + '/is-registered.html'
+  isRegisteredFrame.style = 'display:none;'
+  document.body.appendChild(isRegisteredFrame)
+
+  await loadElement(isRegisteredFrame)
+  const result = await frameCall(isRegisteredFrame, {})
+  document.body.removeChild(isRegisteredFrame)
+  return Boolean(result.registered)
 }
 
 window.WebMonetization.monetize = window.WebMonetization.monetize || async function createIlpConnection ({
