@@ -33,7 +33,7 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        // exclude: /node_modules/,
+        exclude: /node_modules/,
         loader: 'babel-loader',
         options: {
           presets: ['es2017', 'es2015'],
@@ -63,15 +63,9 @@ module.exports = {
     ]
   },
 
-  /*
-  plugins: [
-    // new BundleAnalyzerPlugin(),
-    new webpack.ProvidePlugin({
-      $: 'jquery',
-      jQuery: 'jquery',
-    })
-  ],
-  */
+  /*plugins: [
+    new BundleAnalyzerPlugin()
+  ],*/
 
   node: {
     console: true,
