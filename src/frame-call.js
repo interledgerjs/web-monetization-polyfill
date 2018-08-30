@@ -1,3 +1,5 @@
+const debug = require('debug')('web-monetization-polyfill:frame-call')
+
 async function frameCall (iframe, data = {}, method, timeout = 5000) {
   // janky random ID generation
   const id = String(Math.random()).substring(2)
@@ -5,11 +7,9 @@ async function frameCall (iframe, data = {}, method, timeout = 5000) {
   let timer
   const result = new Promise((resolve, reject) => {
     function messageListener (event) {
-      console.log('GOT PACKET IN FRAME CALL HANDLER', id, event.data)
       if (event.data && typeof event.data === 'object' && event.data.id === id && (event.data.response || event.data.error)) {
         window.removeEventListener('message', messageListener)
         clearTimeout(timer)
-        console.log('event.data', event.data)
         if (event.data.response) {
           resolve(event.data.response)
         } else {
@@ -24,7 +24,7 @@ async function frameCall (iframe, data = {}, method, timeout = 5000) {
 
     window.addEventListener('message', messageListener, false)
     timer = setTimeout(() => {
-      console.log('timed out call. origin=' + window.location.origin)
+      debug('timed out call. origin=' + window.location.origin)
       window.removeEventListener('message', messageListener)
       reject(new Error('request to iframe timed out.' +
         ' id=' + id +
@@ -35,7 +35,6 @@ async function frameCall (iframe, data = {}, method, timeout = 5000) {
   const message = { id, request: data }
   if (method) message.method = method
 
-  console.log('SENDING REQUEST', id, window.location.origin)
   iframe.contentWindow.postMessage(message, '*')
   return result
 }

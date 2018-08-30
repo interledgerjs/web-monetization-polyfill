@@ -13,10 +13,9 @@ class NoHandlerRegisteredError extends Error {
 
 function load () {
   async function receiveMessage (event) {
-    const { id, method, request, response } = event.data
+    const { id, method, request, response, error } = event.data
 
-    if (response) {
-      console.log('GOT RESPONSE PACKET IN IFRAME HANDLER')
+    if (response || error) {
       return
     }
 
@@ -32,12 +31,7 @@ function load () {
           ? { contentWindow: window.top }
           : window.handlerFrame
 
-        console.log('FROM PARENT?', event.source === window.top)
-        console.log('FROM FRAME?', event.source === window.handlerFrame.contentWindow)
-
-        console.log('SENDING REQUEST TO IFRAME', request)
         const response = await frameCall(msgWindow, request)
-        console.log('POSTING RESPONSE')
         event.source.postMessage({ id, response }, '*')
       } else if (method === 'connect') {
         const handler = window.localStorage.getItem('handler')
