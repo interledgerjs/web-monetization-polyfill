@@ -6,7 +6,8 @@ window.WebMonetization = window.WebMonetization || {}
 window.WebMonetization._createConnection = async function ({
   handlerFrame,
   destinationAccount,
-  sharedSecret
+  sharedSecret,
+  minExchangeRatePrecision
 }) {
   // is there a way to do this w/out buffer/crypto
   const _sharedSecret = Buffer.from(sharedSecret, 'base64')
@@ -14,7 +15,8 @@ window.WebMonetization._createConnection = async function ({
   const connection = await IlpStream.createConnection({
     plugin,
     destinationAccount,
-    sharedSecret: _sharedSecret
+    sharedSecret: _sharedSecret,
+    minExchangeRatePrecision: minExchangeRatePrecision || 2
   })
 
   return new WebIlpConnection({ connection })
