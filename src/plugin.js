@@ -74,16 +74,8 @@ class PluginIframe {
       }
     }
 
-    while (true) {
-      try {
-        const response = await frameCall(this.iframe, data.toString('base64'))
-        return Buffer.from(response, 'base64')
-      } catch (e) {
-        // TODO: should this just end finally and let STREAM handle it?
-        console.error(e)
-        await new Promise(resolve => setTimeout(resolve, 2000))
-      }
-    }
+    const response = await frameCall(this.iframe, data.toString('base64'))
+    return Buffer.from(response, 'base64')
   }
 }
 
