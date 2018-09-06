@@ -1,3 +1,4 @@
+const EventEmitter = require('events')
 const frameCall = require('./frame-call')
 const ILDCP = require('ilp-protocol-ildcp')
 const IlpPacket = require('ilp-packet')
@@ -8,14 +9,46 @@ const base64url = buf => buf
   .replace(/\//g, '_')
   .replace(/\+/g, '-')
 
-class PluginIframe {
+const ConnectionStates = {
+  NOT_CONNECTED: 0,
+  CONNECTING: 1,
+  CONNECTED: 2
+}
+
+class PluginIframe extends EventEmitter {
   constructor ({ handlerFrame }) {
+    super()
+
     this.iframe = handlerFrame
-    this.connected = false
+    this.connectionState = ConnectionStates.NOT_CONNECTED
     this.pluginId = base64url(crypto.randomBytes(8))
   }
 
+  async awaitConnectOrDisconnect () {
+    if (this.connectionState === ConnectionStates.CONNECTING) {
+      new Promise((resolve, reject) => {
+        onConnect () {
+          resolve()
+          this.removeListener('disconnect', onDisconnect)
+        }
+
+        onDisconnect () {
+          reject(new Error('plugin disconnected'))
+          this.removeListener('connect', onConnect)
+        }
+
+        this.once('connect', onConnect)
+        this.once('disconnect', onDisconnect)
+      })
+    }
+  }
+
   async connect () {
+    if (this.connectionState !== ConnectionStates.NOT_CONNECTED) {
+      return this.awaitConnectOrDisconnect()
+    }
+
+    this.connectionState = ConnectionStates.CONNECTING
     this.messageListener = async (event) => {
       const { id, request } = event.data
       if (!request) return
@@ -46,16 +79,18 @@ class PluginIframe {
     window.addEventListener('message', this.messageListener, false)
     this.ildcp = await ILDCP.fetch(this.sendData.bind(this))
     this.ildcp.clientAddress += '.' + this.pluginId
-    this.connected = true
+    this.connectionState = ConnectionState.CONNECTED
+    this.emit('connect')
   }
 
   async disconnect () {
     window.removeEventListener('message', this.messageListener)
-    this.connected = false
+    this.connectionState = ConnectionState.NOT_CONNECTED
+    this.emit('disconnect')
   }
 
   async isConnected () {
-    return this.connected
+    return this.connectionState === ConnectionState.CONNECTED
   }
 
   registerDataHandler (handler) {
