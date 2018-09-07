@@ -46,13 +46,14 @@ class PluginIframe extends EventEmitter {
 
   async connect () {
     if (this.connectionState !== ConnectionStates.NOT_CONNECTED) {
-      console.log("WAITING FOR CONNECT OR DISCONNECT")
       return this.awaitConnectOrDisconnect()
     }
 
     this.connectionState = ConnectionStates.CONNECTING
     this.messageListener = async (event) => {
       const { id, request } = event.data
+      let packetIntendedForUs = false
+
       if (event.origin !== WEB_MONETIZATION_DOMAIN || !request) {
         return
       }
@@ -64,6 +65,8 @@ class PluginIframe extends EventEmitter {
         // just ignore the packets that aren't for us
         if (!parsed.destination.startsWith(this.ildcp.clientAddress)) {
           return
+        } else {
+          packetIntendedForUs = true
         }
 
         const response = await this.handler(requestBuffer)
@@ -72,11 +75,16 @@ class PluginIframe extends EventEmitter {
           response: response.toString('base64')
         }, WEB_MONETIZATION_DOMAIN)
       } catch (e) {
-        console.error('error in handler.', e)
-        this.iframe.contentWindow.postMessage({
-          id,
-          error: e.message
-        }, WEB_MONETIZATION_DOMAIN)
+        console.error('error in handler.' +
+          ' pluginId=' + this.pluginId +
+          ' error=' + e.stack)
+
+        if (packetIntendedForUs) {
+          this.iframe.contentWindow.postMessage({
+            id,
+            error: e.message
+          }, WEB_MONETIZATION_DOMAIN)
+        }
       }
     }
 
@@ -84,7 +92,6 @@ class PluginIframe extends EventEmitter {
     this.ildcp = await ILDCP.fetch(this.sendData.bind(this))
     this.ildcp.clientAddress += '.' + this.pluginId
     this.connectionState = ConnectionStates.CONNECTED
-    console.log("CONNECTED")
     this.emit('connect')
   }
 
