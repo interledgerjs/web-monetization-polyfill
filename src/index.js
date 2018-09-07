@@ -1,7 +1,6 @@
 // TODO: should some of these libraries be deferred too?
 const frameCall = require('./frame-call')
-const WEB_MONETIZATION_DOMAIN = 'https://polyfill.webmonetization.org'
-// const WEB_MONETIZATION_DOMAIN = 'http://webmonetization.sharafian.com:8080'
+const WEB_MONETIZATION_DOMAIN = require('./web-monetization-domain')
 
 function loadElement (el) {
   return new Promise(resolve => el.addEventListener('load', resolve))
@@ -12,6 +11,7 @@ window.WebMonetization.register = window.WebMonetization.register || function re
   const handler = encodeURIComponent(handlerUri)
   const iframeUrl = WEB_MONETIZATION_DOMAIN + '/register.html' +
     '?handler=' + handler +
+    '&origin=' + encodeURIComponent(window.location.origin) +
     (name ? ('&name=' + encodeURIComponent(name)) : '')
 
   // TODO: make sure this can't be covered up or clickjacked
@@ -42,7 +42,12 @@ window.WebMonetization.isRegistered = window.WebMonetization.isRegistered || asy
   document.body.appendChild(isRegisteredFrame)
 
   await loadElement(isRegisteredFrame)
-  const result = await frameCall(isRegisteredFrame, {})
+  const result = await frameCall({
+    iframe: isRegisteredFrame,
+    data: {},
+    origin: WEB_MONETIZATION_DOMAIN
+  })
+
   document.body.removeChild(isRegisteredFrame)
   return Boolean(result.registered)
 }
@@ -63,7 +68,8 @@ window.WebMonetization.monetize = window.WebMonetization.monetize || async funct
   // mount the iframe to webmonetization.org
   const wmFrame = document.createElement('iframe')
   window.WebMonetization._wmFrame = wmFrame
-  wmFrame.src = WEB_MONETIZATION_DOMAIN + '/iframe.html'
+  wmFrame.src = WEB_MONETIZATION_DOMAIN + '/iframe.html' +
+    '?origin=' + encodeURIComponent(window.location.origin)
   wmFrame.style = 'display:none;'
   document.body.appendChild(wmFrame)
 
@@ -74,7 +80,12 @@ window.WebMonetization.monetize = window.WebMonetization.monetize || async funct
 
   const prepareHandler = async () => {
     await loadElement(wmFrame)
-    await frameCall(wmFrame, {}, 'connect')
+    await frameCall({
+      iframe: wmFrame,
+      data: {},
+      method: 'connect',
+      origin: WEB_MONETIZATION_DOMAIN
+    })
   }
 
   // load STREAM while loading wmFrame and handler

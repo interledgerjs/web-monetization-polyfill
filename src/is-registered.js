@@ -8,10 +8,11 @@ function matchesHandlerOrigin (inquiringOrigin) {
 
 window.addEventListener('message', event => {
   const inquiringOrigin = event.origin
+
   window.parent.postMessage({
     id: event.data.id,
     response: {
       registered: matchesHandlerOrigin(inquiringOrigin)
     }
-  }, '*')
+  }, inquiringOrigin)
 })
