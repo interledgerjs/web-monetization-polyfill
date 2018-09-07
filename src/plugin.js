@@ -58,6 +58,10 @@ class PluginIframe extends EventEmitter {
         return
       }
 
+      if (this.connectionState !== ConnectionStates.CONNECTED) {
+        await this.awaitConnectOrDisconnect()
+      }
+
       try {
         const requestBuffer = Buffer.from(request, 'base64')
         const parsed = IlpPacket.deserializeIlpPrepare(requestBuffer)
