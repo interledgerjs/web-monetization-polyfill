@@ -13,7 +13,8 @@ const WEB_MONETIZATION_DOMAIN = require('./web-monetization-domain')
 const ConnectionStates = {
   NOT_CONNECTED: 0,
   CONNECTING: 1,
-  CONNECTED: 2
+  CONNECTED: 2,
+  DEAD: 3
 }
 
 class PluginIframe extends EventEmitter {
@@ -41,6 +42,10 @@ class PluginIframe extends EventEmitter {
         this.once('connect', onConnect)
         this.once('disconnect', onDisconnect)
       })
+    }
+
+    if (this.connectionState === ConnectionStates.DEAD) {
+      throw new Error('plugin has died. id=' + this.pluginId)
     }
   }
 
@@ -83,6 +88,9 @@ class PluginIframe extends EventEmitter {
           ' pluginId=' + this.pluginId +
           ' error=' + e.stack)
 
+        // clean ourselves up to prevent memory leak
+        this.disconnect()
+
         if (packetIntendedForUs) {
           this.iframe.contentWindow.postMessage({
             id,
@@ -101,7 +109,7 @@ class PluginIframe extends EventEmitter {
 
   async disconnect () {
     window.removeEventListener('message', this.messageListener)
-    this.connectionState = ConnectionStates.NOT_CONNECTED
+    this.connectionState = ConnectionStates.DEAD
     this.emit('disconnect')
   }
 
