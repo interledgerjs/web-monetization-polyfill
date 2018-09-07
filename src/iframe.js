@@ -12,6 +12,10 @@ class NoHandlerRegisteredError extends Error {
 }
 
 function load () {
+  const params = new URLSearchParams(window.location.search)
+  const parentOrigin = params.get('origin')
+  let handlerOrigin
+
   async function receiveMessage (event) {
     const { id, method, request, response, error } = event.data
 
@@ -27,32 +31,54 @@ function load () {
         }
 
         // forward to the frame that didn't send the message
-        const msgWindow = (window.handlerFrame.contentWindow === event.source)
-          ? { contentWindow: window.top }
+        const fromHandler = window.handlerFrame.contentWindow === event.source
+        const expectedOrigin = fromHandler ? handlerOrigin : parentOrigin
+        const msgWindow = fromHandler
+          ? { contentWindow: window.parent }
           : window.handlerFrame
 
-        const response = await frameCall(msgWindow, request)
-        event.source.postMessage({ id, response }, '*')
+        if (event.origin !== expectedOrigin) {
+          console.error('got ILP message from unexpected origin.' +
+            ' got=' + event.origin +
+            ' expected=' + expectedOrigin)
+          return
+        }
+
+        const response = await frameCall({
+          iframe: msgWindow,
+          data: request
+        })
+
+        event.source.postMessage({ id, response }, expectedOrigin)
       } else if (method === 'connect') {
+        if (event.origin !== parentOrigin) {
+          console.error('got "connect" message from unexpected origin.' +
+            ' got=' + event.origin +
+            ' expected=' + parentOrigin)
+          return
+        }
+
         const handler = window.localStorage.getItem('handler')
+        handlerOrigin = new URL(handler).origin
+
         if (!handler) {
           throw new NoHandlerRegisteredError('No Web Monetization handler has been registered.')
         }
 
-        if (event.source !== window.top) {
+        if (event.source !== window.parent) {
           throw new Error('this frame is not authorized to handle this message')
         }
 
         const handlerFrame = document.createElement('iframe')
         window.handlerFrame = handlerFrame
 
-        handlerFrame.src = handler
+        handlerFrame.src = handler + '?origin=' + encodeURIComponent(parentOrigin)
         handlerFrame.style = 'display:none;'
         document.body.appendChild(handlerFrame)
 
         await loadElement(handlerFrame)
 
-        event.source.postMessage({ id, response: true }, '*')
+        event.source.postMessage({ id, response: true }, parentOrigin)
       }
     } catch (e) {
       event.source.postMessage({ id, error: e.message, errorName: e.name }, '*')

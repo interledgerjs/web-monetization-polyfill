@@ -9,6 +9,7 @@ const base64url = buf => buf
   .replace(/\//g, '_')
   .replace(/\+/g, '-')
 
+const WEB_MONETIZATION_DOMAIN = require('./web-monetization-domain')
 const ConnectionStates = {
   NOT_CONNECTED: 0,
   CONNECTING: 1,
@@ -26,13 +27,13 @@ class PluginIframe extends EventEmitter {
 
   async awaitConnectOrDisconnect () {
     if (this.connectionState === ConnectionStates.CONNECTING) {
-      new Promise((resolve, reject) => {
-        onConnect () {
+      return new Promise((resolve, reject) => {
+        function onConnect () {
           resolve()
           this.removeListener('disconnect', onDisconnect)
         }
 
-        onDisconnect () {
+        function onDisconnect () {
           reject(new Error('plugin disconnected'))
           this.removeListener('connect', onConnect)
         }
@@ -45,13 +46,16 @@ class PluginIframe extends EventEmitter {
 
   async connect () {
     if (this.connectionState !== ConnectionStates.NOT_CONNECTED) {
+      console.log("WAITING FOR CONNECT OR DISCONNECT")
       return this.awaitConnectOrDisconnect()
     }
 
     this.connectionState = ConnectionStates.CONNECTING
     this.messageListener = async (event) => {
       const { id, request } = event.data
-      if (!request) return
+      if (event.origin !== WEB_MONETIZATION_DOMAIN || !request) {
+        return
+      }
 
       try {
         const requestBuffer = Buffer.from(request, 'base64')
@@ -66,31 +70,32 @@ class PluginIframe extends EventEmitter {
         this.iframe.contentWindow.postMessage({
           id,
           response: response.toString('base64')
-        }, '*')
+        }, WEB_MONETIZATION_DOMAIN)
       } catch (e) {
         console.error('error in handler.', e)
         this.iframe.contentWindow.postMessage({
           id,
           error: e.message
-        }, '*')
+        }, WEB_MONETIZATION_DOMAIN)
       }
     }
 
     window.addEventListener('message', this.messageListener, false)
     this.ildcp = await ILDCP.fetch(this.sendData.bind(this))
     this.ildcp.clientAddress += '.' + this.pluginId
-    this.connectionState = ConnectionState.CONNECTED
+    this.connectionState = ConnectionStates.CONNECTED
+    console.log("CONNECTED")
     this.emit('connect')
   }
 
   async disconnect () {
     window.removeEventListener('message', this.messageListener)
-    this.connectionState = ConnectionState.NOT_CONNECTED
+    this.connectionState = ConnectionStates.NOT_CONNECTED
     this.emit('disconnect')
   }
 
   async isConnected () {
-    return this.connectionState === ConnectionState.CONNECTED
+    return this.connectionState === ConnectionStates.CONNECTED
   }
 
   registerDataHandler (handler) {
@@ -109,7 +114,12 @@ class PluginIframe extends EventEmitter {
       }
     }
 
-    const response = await frameCall(this.iframe, data.toString('base64'))
+    const response = await frameCall({
+      iframe: this.iframe,
+      data: data.toString('base64'),
+      origin: WEB_MONETIZATION_DOMAIN
+    })
+
     return Buffer.from(response, 'base64')
   }
 }

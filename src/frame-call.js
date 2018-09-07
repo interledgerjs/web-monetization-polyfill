@@ -1,12 +1,16 @@
 const debug = require('debug')('web-monetization-polyfill:frame-call')
 
-async function frameCall (iframe, data = {}, method, timeout = 5000) {
+async function frameCall ({ iframe, data = {}, method, timeout = 5000, origin = '*' }) {
   // janky random ID generation
   const id = String(Math.random()).substring(2)
 
   let timer
   const result = new Promise((resolve, reject) => {
     function messageListener (event) {
+      if (origin !== '*' && event.origin !== origin) {
+        return
+      }
+
       if (event.data && typeof event.data === 'object' && event.data.id === id && (event.data.response || event.data.error)) {
         window.removeEventListener('message', messageListener)
         clearTimeout(timer)
@@ -35,7 +39,7 @@ async function frameCall (iframe, data = {}, method, timeout = 5000) {
   const message = { id, request: data }
   if (method) message.method = method
 
-  iframe.contentWindow.postMessage(message, '*')
+  iframe.contentWindow.postMessage(message, origin)
   return result
 }
 
