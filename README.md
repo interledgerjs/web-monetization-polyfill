@@ -23,6 +23,8 @@ The exact specification of these methods can be found [in the Web Monetization R
 
 ### Register Web Monetization Handler
 
+Associates a 'handlerUri' as this browser's web monetization handler so that they can send and receive Interledger packets on behalf of the user. Unless you're a Web Monetization provider like [Coil](https://coil.com) you don't need to use this function. If you want to implement a handler, the API can be found in [the Web Monetization RFC](https://github.com/interledger/rfcs/blob/master/0028-web-monetization/0028-web-monetization.md#web-monetization).
+
 ```js
 window.WebMonetization.register({ name: string, handlerUri: string })
 ```
@@ -33,6 +35,8 @@ window.WebMonetization.register({ name: string, handlerUri: string })
 - The user confirms and the popup is dismissed
 
 ### Monetize a Web Page
+
+Creates an [Interledger/STREAM connection](https://github.com/interledger/rfcs/blob/master/0028-web-monetization/0028-web-monetization.md#ilp-connection-class) that allows the webpage to send money over Interledger.
 
 ```js
 async window.WebMonetization.monetize({
