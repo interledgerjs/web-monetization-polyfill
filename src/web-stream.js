@@ -68,7 +68,7 @@ class WebIlpStream extends EventTarget {
   }
 
   close () {
-    return this._stream.end()
+    return this._stream.destroy()
   }
 
   send (msg) {

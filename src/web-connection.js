@@ -68,7 +68,7 @@ class WebIlpConnection extends EventTarget {
   }
 
   close () {
-    return this._connection.end()
+    return this._connection.destroy()
   }
 }
 
