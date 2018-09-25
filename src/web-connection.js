@@ -27,6 +27,22 @@ class WebIlpConnection extends EventTarget {
     return new WebIlpStream({ stream })
   }
 
+  get sourceAssetScale () {
+    return this._connection.sourceAssetScale
+  }
+
+  get sourceAssetCode () {
+    return this._connection.sourceAssetCode
+  }
+
+  get destinationAssetScale () {
+    return this._connection.destinationAssetScale
+  }
+
+  get destinationAssetCode () {
+    return this._connection.destinationAssetCode
+  }
+
   get connectionTag () {
     return this._connection.connectionTag
   }
