@@ -60,7 +60,6 @@ function load () {
         }
 
         const handler = window.localStorage.getItem('handler')
-        handlerOrigin = new URL(handler).origin
 
         if (!handler) {
           throw new NoHandlerRegisteredError('No Web Monetization handler has been registered.')
@@ -69,6 +68,8 @@ function load () {
         if (event.source !== window.parent) {
           throw new Error('this frame is not authorized to handle this message')
         }
+
+        handlerOrigin = new URL(handler).origin
 
         const handlerFrame = document.createElement('iframe')
         window.handlerFrame = handlerFrame
