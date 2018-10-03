@@ -7,7 +7,8 @@ window.WebMonetization._createConnection = async function ({
   handlerFrame,
   destinationAccount,
   sharedSecret,
-  minExchangeRatePrecision
+  minExchangeRatePrecision,
+  slippage
 }) {
   // is there a way to do this w/out buffer/crypto
   const _sharedSecret = Buffer.from(sharedSecret, 'base64')
@@ -16,7 +17,8 @@ window.WebMonetization._createConnection = async function ({
     plugin,
     destinationAccount,
     sharedSecret: _sharedSecret,
-    minExchangeRatePrecision: minExchangeRatePrecision || 2
+    minExchangeRatePrecision: minExchangeRatePrecision || 2,
+    slippage: slippage || 0.07
   })
 
   return new WebIlpConnection({ connection })
