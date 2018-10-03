@@ -1,4 +1,5 @@
 const frameCall = require('./frame-call')
+const debug = require('debug')('web-monetization-polyfill:iframe')
 
 function loadElement (el) {
   return new Promise(resolve => el.addEventListener('load', resolve))
@@ -38,7 +39,7 @@ function load () {
           : window.handlerFrame
 
         if (event.origin !== expectedOrigin) {
-          console.error('got ILP message from unexpected origin.' +
+          debug('got ILP message from unexpected origin.' +
             ' got=' + event.origin +
             ' expected=' + expectedOrigin)
           return
@@ -52,7 +53,7 @@ function load () {
         event.source.postMessage({ id, response }, expectedOrigin)
       } else if (method === 'connect') {
         if (event.origin !== parentOrigin) {
-          console.error('got "connect" message from unexpected origin.' +
+          debug('got "connect" message from unexpected origin.' +
             ' got=' + event.origin +
             ' expected=' + parentOrigin)
           return

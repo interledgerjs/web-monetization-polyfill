@@ -2,6 +2,7 @@ const EventEmitter = require('events')
 const frameCall = require('./frame-call')
 const ILDCP = require('ilp-protocol-ildcp')
 const IlpPacket = require('ilp-packet')
+const debug = require('debug')('web-monetization-polyfill:plugin')
 const crypto = require('crypto')
 const base64url = buf => buf
   .toString('base64')
@@ -84,7 +85,7 @@ class PluginIframe extends EventEmitter {
           response: response.toString('base64')
         }, WEB_MONETIZATION_DOMAIN)
       } catch (e) {
-        console.error('error in handler.' +
+        debug('error in handler.' +
           ' pluginId=' + this.pluginId +
           ' error=' + e.stack)
 
