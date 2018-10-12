@@ -10,7 +10,8 @@ module.exports = {
     'stream': './src/stream.js',
     'iframe': './src/iframe.js',
     'register': './src/register.js',
-    'is-registered': './src/is-registered.js'
+    'is-registered': './src/is-registered.js',
+    'frame-call': './src/frame-call-export.js'
   },
 
   output: {
