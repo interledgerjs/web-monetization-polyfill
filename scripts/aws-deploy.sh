@@ -9,3 +9,4 @@ aws s3 cp dist/stream.js s3://polyfill.webmonetization.org/stream.js
 aws s3 cp static/iframe.html s3://polyfill.webmonetization.org/iframe.html
 aws s3 cp static/is-registered.html s3://polyfill.webmonetization.org/is-registered.html
 aws s3 cp dist/is-registered.js s3://polyfill.webmonetization.org/is-registered.js
+aws s3 cp dist/frame-call.js s3://polyfill.webmonetization.org/frame-call.js
