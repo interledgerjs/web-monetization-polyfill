@@ -44,8 +44,13 @@ router.get('/is-registered.html', async ctx => {
 })
 
 router.get('/is-registered.js', async ctx => {
-  ctx.set('Content-Type', 'text/html')
+  ctx.set('Content-Type', 'text/javascript')
   ctx.body = await fs.readFile('./dist/is-registered.js', 'utf8')
+})
+
+router.get('/frame-call.js', async ctx => {
+  ctx.set('Content-Type', 'text/javascript')
+  ctx.body = await fs.readFile('./dist/frame-call.js', 'utf8')
 })
 
 app
