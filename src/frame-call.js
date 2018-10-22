@@ -1,6 +1,6 @@
 const debug = require('debug')('web-monetization-polyfill:frame-call')
 
-async function frameCall ({ iframe, data = {}, method, timeout = 5000, origin = '*' }) {
+async function frameCall ({ iframe, data = {}, method, timeout = 60000, origin = '*' }) {
   // janky random ID generation
   const id = String(Math.random()).substring(2)
 
