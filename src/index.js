@@ -78,6 +78,20 @@ window.WebMonetizationPolyfill.monetize = async function createIlpConnection ({
     })
   }
 
+  if (window.WebMonetizationPolyfill.creatingConnection) {
+    await window.WebMonetizationPolyfill.creatingConnection
+    return window.WebMonetizationPolyfill.createConnection({
+      handlerFrame: wmFrame,
+      destinationAccount,
+      sharedSecret
+    })
+  }
+
+  let resolveConnectingPromise
+  window.WebMonetizationPolyfill.creatingConnection = new Promise(resolve => {
+    resolveConnectingPromise = resolve
+  })
+
   // load frame call util
   const frameCall = await loadFrameCallScript()
 
@@ -109,6 +123,9 @@ window.WebMonetizationPolyfill.monetize = async function createIlpConnection ({
     prepareHandler(),
     loadElement(streamScript)
   ])
+
+  // Resolve any other concurrently running requests to Web Monetization
+  resolveConnectingPromise()
 
   // clean up the script element and init connection
   document.body.removeChild(streamScript)
