@@ -1,6 +1,6 @@
 'use strict'
 const webpack = require('webpack')
-// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 module.exports = {
   mode: 'production',
@@ -64,9 +64,9 @@ module.exports = {
     ]
   },
 
-  /*plugins: [
+  plugins: [
     new BundleAnalyzerPlugin()
-  ],*/
+  ],
 
   node: {
     console: true,
