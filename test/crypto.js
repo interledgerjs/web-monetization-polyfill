@@ -66,53 +66,19 @@ describe('stream crypto lib test', async function() {
   })
   
   it('generateSharedSecretFromTokenAsync', async function() {
-    // const testData = new Buffer.from('Hello this is my super secret message')
     const token = Buffer.from('connectionid', 'ascii')
     const secret = streamCrypto.generateRandomCondition()
 
-    console.log('token', token)
-    console.log('secret', secret)
-    // const nodeToken = streamCrypto.generateToken()
-    const nodeSecret = streamCrypto.generateRandomCondition()
-    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) //TODO: Make this use the stream async lib 
+    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    
     const webSharedSecret = await page.evaluate(async (secret, token) => {
-      console.log('secret', secret)
-      console.log('token', token)
-      // const token = generateToken()
-      // const secret = generateRandomCondition()
-      const sharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
-      return sharedSecret
+      return await generateSharedSecretFromTokenAsync(secret, token)
     }, secret, token)
     
-    console.log('nodeSharedSecret', nodeSharedSecret)
-    console.log('webSharedSecret', webSharedSecret)
     const webSharedSecretArray = bufToArray(webSharedSecret)
     const nodeSharedSecretArray = bufToArray(nodeSharedSecret)
-    console.log('nodeSharedSecretArray', nodeSharedSecretArray)
-    console.log('nodeSharedSecret length', nodeSharedSecret.length)
-    console.log('webSharedSecretArray', webSharedSecretArray)
-    console.log('wss', webSharedSecretArray.length)
     assert.deepEqual(nodeSharedSecretArray, webSharedSecretArray)
-    // const myArrBuff = new ArrayBuffer(18)
-    // console.log(myArrBuff)
-    // const nodeBuffer = Buffer.from(myArrBuff)
-    // console.log(nodeBuffer)
-
-    // console.log(Buffer.isBuffer(nodeToken))
-    // console.log(nodeToken.length)
-    // console.log(Buffer.isBuffer(webToken))
-    // console.log(webToken.length)
-    // console.log(Array.from(webToken))
-    // let webTokenArray = []
-    // let i = 0
-    // while (true) {
-    //   if (webToken[i] === undefined) {
-    //     break
-    //   }
-    //   webTokenArray[i] = webToken[i]
-    //   i++
-    // }
-    // assert.equal(nodeToken.length, webTokenArray.length)
   })
+
 
 })

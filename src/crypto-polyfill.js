@@ -17,7 +17,7 @@ function generateToken () {
   return generateRandomCondition(TOKEN_LENGTH)
 }
 
-// Not used for Web Javascript
+// Not used for Web Javascript - No Tests
 async function generateTokenAndSharedSecret (seed) { 
   console.log('generateTokenAndSharedSecret')
   const token = generateRandomCondition(TOKEN_LENGTH)
@@ -25,7 +25,7 @@ async function generateTokenAndSharedSecret (seed) {
   return { token, sharedSecret }
 }
 
-// Sync no-op for Web Javascript
+// Sync no-op for Web Javascript - No Tests
 async function generateSharedSecretFromToken (seed, token) {
   console.log('generateSharedSecretFromToken SHOULD NEVER BE CALLED!!!!')
   return 'no-op for javascript'
@@ -51,22 +51,22 @@ function generateRandomCondition (size = 32) {
   // return Buffer.from(randValues.buffer) //TODO: Not sure if this might be the right way
 }
 
-async function generatePskEncryptionKey (sharedSecret) {
+async function generatePskEncryptionKey (sharedSecret) { //TODO: Test
   console.log('generatePskEncryptionKey')
   return await hmac(sharedSecret, ENCRYPTION_KEY_STRING)
 }
 
-async function generateFulfillmentKey (sharedSecret) { 
+async function generateFulfillmentKey (sharedSecret) { //TODO: Test
   console.log('generateFulfillmentKey')
   return await hmac(sharedSecret, FULFILLMENT_GENERATION_STRING)
 }
 
-async function generateFulfillment (fulfillmentKey, data) {
+async function generateFulfillment (fulfillmentKey, data) {//TODO: Test
   console.log('generateFulfillment')
   return await hmac(fulfillmentKey, data)
 }
 
-async function hash (preimage) { //ASSUMING ASYNC
+async function hash (preimage) { //ASSUMING ASYNC//TODO: Test
   console.log('hash')
   const digest = await webCrypto.subtle.digest(
     {
@@ -78,7 +78,7 @@ async function hash (preimage) { //ASSUMING ASYNC
   return digest 
 }
 
-async function encrypt (pskEncryptionKey, ...buffers) { //ASSUMING ASYNC
+async function encrypt (pskEncryptionKey, ...buffers) { //ASSUMING ASYNC//TODO: Test
   console.log('encrypt')
 
   const dataBuffer = Buffer.concat(buffers)
@@ -124,7 +124,7 @@ async function encrypt (pskEncryptionKey, ...buffers) { //ASSUMING ASYNC
   return cipherText
 }
 
-async function decrypt (pskEncryptionKey, data) { //ASSUMING ASYNC
+async function decrypt (pskEncryptionKey, data) { //ASSUMING ASYNC//TODO: Test
   console.log('decrypt')
 
   const nonce = data.slice(0, IV_LENGTH)
@@ -146,7 +146,8 @@ async function decrypt (pskEncryptionKey, data) { //ASSUMING ASYNC
   return 'todo'
 }
 
-async function hmac (key, message) {
+// Tested indirectly by other functions, not directly accessed by STREAM
+async function hmac (key, message) { 
   console.log('hmac')
   const hmacKey = await webCrypto.subtle.importKey(
     "raw", 
