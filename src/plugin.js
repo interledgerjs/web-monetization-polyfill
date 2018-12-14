@@ -3,7 +3,7 @@ const frameCall = require('./frame-call')
 const ILDCP = require('ilp-protocol-ildcp')
 const IlpPacket = require('ilp-packet')
 const debug = require('debug')('web-monetization-polyfill:plugin')
-const crypto = require('crypto')
+const cryptoHelper = require('./crypto-polyfill')
 const base64url = buf => buf
   .toString('base64')
   .replace(/=/g, '')
@@ -24,7 +24,7 @@ class PluginIframe extends EventEmitter {
 
     this.iframe = handlerFrame
     this.connectionState = ConnectionStates.NOT_CONNECTED
-    this.pluginId = base64url(crypto.randomBytes(8))
+    this.plyginId = base64url(cryptoHelper.generateRandomCondition(8))
   }
 
   async awaitConnectOrDisconnect () {

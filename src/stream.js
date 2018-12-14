@@ -1,4 +1,4 @@
-const IlpStream = require('ilp-protocol-stream')
+const { createConnection } = require('ilp-protocol-stream')
 const WebIlpConnection = require('./web-connection')
 const Plugin = require('./plugin')
 
@@ -13,7 +13,7 @@ window.WebMonetizationPolyfill.createConnection = async function ({
   // is there a way to do this w/out buffer/crypto
   const _sharedSecret = Buffer.from(sharedSecret, 'base64')
   const plugin = new Plugin({ handlerFrame })
-  const connection = await IlpStream.createConnection({
+  const connection = await createConnection({
     plugin,
     destinationAccount,
     sharedSecret: _sharedSecret,

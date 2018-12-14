@@ -1,9 +1,11 @@
 'use strict'
 const webpack = require('webpack')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
-  mode: 'production',
+  // mode: 'production',
+  mode: 'development',
 
   entry: {
     'index': './src/index.js',
@@ -11,7 +13,7 @@ module.exports = {
     'iframe': './src/iframe.js',
     'register': './src/register.js',
     'is-registered': './src/is-registered.js',
-    'frame-call': './src/frame-call-export.js'
+    'frame-call': './src/frame-call-export.js',
   },
 
   output: {
@@ -19,15 +21,9 @@ module.exports = {
     path: __dirname,
     libraryTarget: 'umd'
   },
-
-  /*
   externals: {
-    'ws': 'WsPolyfill',
-    'url': 'UrlPolyfill',
-    'node-fetch': 'FetchPolyfill',
-    'source-map-support': 'window.SourceMapSupportPolyfill'
+    // 'crypto': 'WebMonetizationCryptoPolyfill'
   },
-  */
 
   module: {
     // noParse: [ /\bws$/ ],
@@ -37,7 +33,7 @@ module.exports = {
         exclude: /node_modules/,
         loader: 'babel-loader',
         options: {
-          presets: ['es2017', 'es2015'],
+          presets: ['es2017'],
           plugins: [['transform-runtime', {
             helpers: false,
             polyfill: false,
@@ -63,15 +59,27 @@ module.exports = {
       }*/
     ]
   },
+  optimization: {
+    usedExports: true
+  },
 
   plugins: [
-    new BundleAnalyzerPlugin()
+    new CleanWebpackPlugin(['dist']),
+    // new webpack.DefinePlugin({
+    //   'require("./crypto")' : 'require("../../../src/crypto-polyfill")'
+    // }),
+    new webpack.NormalModuleReplacementPlugin(
+      /node_modules\/ilp-protocol-stream\/src\/crypto.js/,
+      '../../../src/crypto-polyfill.js'
+    )
+    // new BundleAnalyzerPlugin(),
   ],
 
   node: {
     console: true,
     fs: 'empty',
     net: 'empty',
-    tls: 'empty'
+    tls: 'empty',
+    crypto: 'empty'
   }
 }
