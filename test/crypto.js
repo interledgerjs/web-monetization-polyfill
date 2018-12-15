@@ -126,7 +126,7 @@ describe('stream crypto lib test', async function() {
     assert.deepEqual(nodeFulfillmentArray, webFulfillmentArray) 
   })
 
-  it.only('hash', async function() {
+  it('hash', async function() {
     const token = Buffer.from('connectionid', 'ascii')
     const secret = streamCrypto.generateRandomCondition()
     const data = Buffer.from('This is super secret data')
@@ -134,21 +134,23 @@ describe('stream crypto lib test', async function() {
     const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
     const nodeFulfillmentKey = streamCrypto.generateFulfillmentKey(nodeSharedSecret)
     const nodeFulfillment = streamCrypto.generateFulfillment(nodeFulfillmentKey, data)
-    
-    const webFulfillment = await page.evaluate(async (secret, token, data) => {
+    const nodeHash = streamCrypto.hash(nodeFulfillment)
+
+    const webHash = await page.evaluate(async (secret, token, data) => {
       const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
       const fulfillmentKey = await generateFulfillmentKey(webSharedSecret)
-      return await generateFulfillment(fulfillmentKey, data)
+      const fulfillment = await generateFulfillment(fulfillmentKey, data)
+      return await hash(fulfillment)
     }, secret, token, data)
    
-    console.log('nodePskKey', nodeFulfillment)
-    console.log('webPskKey', webFulfillment)
+    console.log('nodeHash', nodeHash)
+    console.log('webHash', webHash)
 
-    const nodeFulfillmentArray = bufToArray(nodeFulfillment)
-    const webFulfillmentArray = bufToArray(webFulfillment)
-    console.log('nodeKeyArray', nodeFulfillmentArray)
-    console.log('webKeyArray', webFulfillmentArray)
-    assert.deepEqual(nodeFulfillmentArray, webFulfillmentArray) 
+    const nodeHashArray = bufToArray(nodeHash)
+    const webHashArray = bufToArray(webHash)
+    console.log('nodeKeyArray', nodeHashArray)
+    console.log('webKeyArray', webHashArray)
+    assert.deepEqual(nodeHashArray, webHashArray) 
   })
 
   it('encrypt', async function() {

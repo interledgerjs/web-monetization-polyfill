@@ -79,7 +79,7 @@ async function hash (preimage) { //ASSUMING ASYNC//TODO: Test
     getArrayBufferFromBuffer(preimage)
   )
   console.log(digest)
-  return digest 
+  return Buffer.from(digest)
 }
 
 async function encrypt (pskEncryptionKey, ...buffers) { //ASSUMING ASYNC//TODO: Test
