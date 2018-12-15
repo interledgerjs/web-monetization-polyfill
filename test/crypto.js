@@ -1,6 +1,7 @@
 const assert = require('chai').assert
 const puppeteer = require('puppeteer')
 const streamCrypto = require('ilp-protocol-stream/src/crypto')
+const streamPacket = require('ilp-protocol-stream/src/packet')
 const serve = require('koa-static')
 const Koa = require('koa')
 const getPort = require('get-port')
@@ -153,8 +154,59 @@ describe('stream crypto lib test', async function() {
     assert.deepEqual(nodeHashArray, webHashArray) 
   })
 
-  it('encrypt', async function() {
+  it.only('encrypt', async function() {
+    const bufA = Buffer.from('This is the secret nuclear bomb codes')
+    const bufB = Buffer.from('The Secret is: I need invite code!!')
+
+  
+    const moneyPacketV0 = new PacketV0.Packet(0, 14, 5, [
+      new PacketV0.StreamMoneyFrame(1, 1),
+      new PacketV0.StreamMoneyFrame(2, 2)
+    ])
+
+
+    const token = Buffer.from('connectionid', 'ascii')
+    const secret = streamCrypto.generateRandomCondition()
+
+    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    const nodePskKey = streamCrypto.generatePskEncryptionKey(nodeSharedSecret)
+    const nodeEncryptedData = streamCrypto.encrypt(nodePskKey, dataBuffers) 
+
+    const webEncryptedData = await page.evaluate(async (secret, token, buffers) => {
+      const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+      const pskKey = await generatePskEncryptionKey(webSharedSecret)
+      return encrypt(pskKey, buffers)
+    }, secret, token, dataBuffers)
     
+    console.log('nodeEncryptedData', nodeEncryptedData)
+    console.log('webEncryptedData', webEncryptedData)
+
+
+
+    // const token = Buffer.from('connectionid', 'ascii')
+    // const secret = streamCrypto.generateRandomCondition()
+    // const data = Buffer.from('This is super secret data')
+
+    // const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    // const nodeFulfillmentKey = streamCrypto.generateFulfillmentKey(nodeSharedSecret)
+    // const nodeFulfillment = streamCrypto.generateFulfillment(nodeFulfillmentKey, data)
+    // const nodeHash = streamCrypto.hash(nodeFulfillment)
+
+    // const webHash = await page.evaluate(async (secret, token, data) => {
+    //   const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+    //   const fulfillmentKey = await generateFulfillmentKey(webSharedSecret)
+    //   const fulfillment = await generateFulfillment(fulfillmentKey, data)
+    //   return await hash(fulfillment)
+    // }, secret, token, data)
+   
+    // console.log('nodeHash', nodeHash)
+    // console.log('webHash', webHash)
+
+    // const nodeHashArray = bufToArray(nodeHash)
+    // const webHashArray = bufToArray(webHash)
+    // console.log('nodeKeyArray', nodeHashArray)
+    // console.log('webKeyArray', webHashArray)
+    // assert.deepEqual(nodeHashArray, webHashArray) 
   })
 
   it('decrypt', async function() {
