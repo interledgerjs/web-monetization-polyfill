@@ -6,19 +6,6 @@ const Koa = require('koa')
 const getPort = require('get-port')
 const path = require('path')
 
-function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint16Array(buf));
-}
-
-function str2ab(str) {
-  var buf = new ArrayBuffer(str.length*2) // 2 bytes for each char
-  var bufView = new Uint16Array(buf)
-  for (var i=0, strLen=str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i)
-  }
-  return buf
-}
-
 function bufToArray (buffer) {
   let convertedArray = []
   let i = 0
@@ -31,6 +18,7 @@ function bufToArray (buffer) {
   }
   return convertedArray
 }
+
 describe('stream crypto lib test', async function() {
   let port
   let browser
@@ -43,7 +31,7 @@ describe('stream crypto lib test', async function() {
     app.listen(port) 
     console.log(`Server Listening at http://localhost:${port}`)
     browser = await puppeteer.launch({
-      headless: false,
+      // headless: false,
     })
     page = await browser.newPage()
     await page.goto(`http://localhost:${port}/test/static/index.html`)
@@ -80,5 +68,94 @@ describe('stream crypto lib test', async function() {
     assert.deepEqual(nodeSharedSecretArray, webSharedSecretArray)
   })
 
+  it('generatePskEncryptionKey', async function() {
+    const token = Buffer.from('connectionid', 'ascii')
+    const secret = streamCrypto.generateRandomCondition()
 
+    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    const nodePskKey = streamCrypto.generatePskEncryptionKey(nodeSharedSecret)
+    
+    const webPskKey = await page.evaluate(async (secret, token) => {
+      const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+      return await generatePskEncryptionKey(webSharedSecret)
+    }, secret, token)
+    
+    const nodePskKeyArray = bufToArray(nodePskKey)
+    const webPskKeyArray = bufToArray(webPskKey)
+    assert.deepEqual(nodePskKeyArray, webPskKeyArray) 
+
+
+
+  })
+
+  it('generateFulfillmentKey', async function() {
+    const token = Buffer.from('connectionid', 'ascii')
+    const secret = streamCrypto.generateRandomCondition()
+
+    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    
+    const nodeFulfillmentKey = streamCrypto.generateFulfillmentKey(nodeSharedSecret)
+    
+    const webFulfillmentKey = await page.evaluate(async (secret, token) => {
+      const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+      return await generateFulfillmentKey(webSharedSecret)
+    }, secret, token)
+    
+    const nodeFulfillmentKeyArray = bufToArray(nodeFulfillmentKey)
+    const webFulfillmentKeyArray = bufToArray(webFulfillmentKey)
+    assert.deepEqual(nodeFulfillmentKeyArray, webFulfillmentKeyArray) 
+  })
+
+  it('generateFulfillment', async function() {
+    const token = Buffer.from('connectionid', 'ascii')
+    const secret = streamCrypto.generateRandomCondition()
+    const data = Buffer.from('This is super secret data')
+
+    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    const nodeFulfillmentKey = streamCrypto.generateFulfillmentKey(nodeSharedSecret)
+    const nodeFulfillment = streamCrypto.generateFulfillment(nodeFulfillmentKey, data)
+    
+    const webFulfillment = await page.evaluate(async (secret, token, data) => {
+      const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+      const fulfillmentKey = await generateFulfillmentKey(webSharedSecret)
+      return await generateFulfillment(fulfillmentKey, data)
+    }, secret, token, data)
+    
+    const nodeFulfillmentArray = bufToArray(nodeFulfillment)
+    const webFulfillmentArray = bufToArray(webFulfillment)
+    assert.deepEqual(nodeFulfillmentArray, webFulfillmentArray) 
+  })
+
+  it.only('hash', async function() {
+    const token = Buffer.from('connectionid', 'ascii')
+    const secret = streamCrypto.generateRandomCondition()
+    const data = Buffer.from('This is super secret data')
+
+    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    const nodeFulfillmentKey = streamCrypto.generateFulfillmentKey(nodeSharedSecret)
+    const nodeFulfillment = streamCrypto.generateFulfillment(nodeFulfillmentKey, data)
+    
+    const webFulfillment = await page.evaluate(async (secret, token, data) => {
+      const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+      const fulfillmentKey = await generateFulfillmentKey(webSharedSecret)
+      return await generateFulfillment(fulfillmentKey, data)
+    }, secret, token, data)
+   
+    console.log('nodePskKey', nodeFulfillment)
+    console.log('webPskKey', webFulfillment)
+
+    const nodeFulfillmentArray = bufToArray(nodeFulfillment)
+    const webFulfillmentArray = bufToArray(webFulfillment)
+    console.log('nodeKeyArray', nodeFulfillmentArray)
+    console.log('webKeyArray', webFulfillmentArray)
+    assert.deepEqual(nodeFulfillmentArray, webFulfillmentArray) 
+  })
+
+  it('encrypt', async function() {
+    
+  })
+
+  it('decrypt', async function() {
+    
+  })
 })

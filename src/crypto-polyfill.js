@@ -53,17 +53,21 @@ function generateRandomCondition (size = 32) {
 
 async function generatePskEncryptionKey (sharedSecret) { //TODO: Test
   console.log('generatePskEncryptionKey')
-  return await hmac(sharedSecret, ENCRYPTION_KEY_STRING)
+  const pskKey = await hmac(sharedSecret, ENCRYPTION_KEY_STRING)
+  return Buffer.from(pskKey)
 }
 
 async function generateFulfillmentKey (sharedSecret) { //TODO: Test
   console.log('generateFulfillmentKey')
-  return await hmac(sharedSecret, FULFILLMENT_GENERATION_STRING)
+  const fulfillmentKey = await hmac(sharedSecret, FULFILLMENT_GENERATION_STRING)
+  return Buffer.from(fulfillmentKey)
 }
 
 async function generateFulfillment (fulfillmentKey, data) {//TODO: Test
   console.log('generateFulfillment')
-  return await hmac(fulfillmentKey, data)
+  const dataBuf = Buffer.from(data)
+  const fulfillment = await hmac(fulfillmentKey, dataBuf)
+  return Buffer.from(fulfillment)
 }
 
 async function hash (preimage) { //ASSUMING ASYNC//TODO: Test
