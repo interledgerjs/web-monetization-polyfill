@@ -51,26 +51,26 @@ function generateRandomCondition (size = 32) {
   // return Buffer.from(randValues.buffer) //TODO: Not sure if this might be the right way
 }
 
-async function generatePskEncryptionKey (sharedSecret) { //TODO: Test
+async function generatePskEncryptionKey (sharedSecret) {
   console.log('generatePskEncryptionKey')
   const pskKey = await hmac(sharedSecret, ENCRYPTION_KEY_STRING)
   return Buffer.from(pskKey)
 }
 
-async function generateFulfillmentKey (sharedSecret) { //TODO: Test
+async function generateFulfillmentKey (sharedSecret) { 
   console.log('generateFulfillmentKey')
   const fulfillmentKey = await hmac(sharedSecret, FULFILLMENT_GENERATION_STRING)
   return Buffer.from(fulfillmentKey)
 }
 
-async function generateFulfillment (fulfillmentKey, data) {//TODO: Test
+async function generateFulfillment (fulfillmentKey, data) {
   console.log('generateFulfillment')
   const dataBuf = Buffer.from(data)
   const fulfillment = await hmac(fulfillmentKey, dataBuf)
   return Buffer.from(fulfillment)
 }
 
-async function hash (preimage) { //ASSUMING ASYNC//TODO: Test
+async function hash (preimage) { 
   console.log('hash')
   const digest = await webCrypto.subtle.digest(
     {
@@ -85,8 +85,8 @@ async function hash (preimage) { //ASSUMING ASYNC//TODO: Test
 async function encrypt (pskEncryptionKey, ...buffers) { //ASSUMING ASYNC//TODO: Test
   console.log('encrypt')
 
-  const dataBuffer = Buffer.concat(buffers)
   const iv = webCrypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  console.log('iv', iv) 
   const alg = { name: ENCRYPTION_ALGORITHM, iv: iv, tagLength: BIT_AUTH_TAG_LENGTH } 
   const key = await webCrypto.subtle.importKey(
     'raw', 
@@ -95,15 +95,39 @@ async function encrypt (pskEncryptionKey, ...buffers) { //ASSUMING ASYNC//TODO: 
     false, 
     ["encrypt", "decrypt"]
   )
-
+  console.log('encrypt key', key)
+  console.log('encrypt buffers', buffers)
+  const arrBuf = Buffer.from(buffers)
+  console.log('encrypt arrBuf', arrBuf)
+  // const dataArray = new Uint8Array()
+  // for (let buffer of buffers) {
+  //   console.log('loop start')
+  //   console.log(Buffer.from(buffer))
+  //   dataArray.push(buffer)
+  // }
+  // console.log('dataArray', dataArray)
+  // const dataBuffer = Buffer.concat(buffers, buffers)
+  // console.log('dataBuffer', dataBuffer)
+  // const ctBuffer = await webCrypto.subtle.encrypt(
+  //   alg,
+  //   key,
+  //   getArrayBufferFromBuffer(dataBuffer)
+  // )
   const ctBuffer = await webCrypto.subtle.encrypt(
     alg,
     key,
-    getArrayBufferFromBuffer(dataBuffer)
+    Buffer.from(buffers)
   )
-  console.log('ctBuffer', ctBuffer.byteLength)
-  const tag = ctBuffer.slice(ctBuffer.byteLength - ((AUTH_TAG_LENGTH + 7) >> 3))
-  console.log('tag', tag)
+  console.log('encrypt ctBuffer', ctBuffer.byteLength)
+  const TAG_START = ctBuffer.byteLength - ((AUTH_TAG_LENGTH + 7) >> 3)
+  const tag = ctBuffer.slice(TAG_START)
+  const data = ctBuffer.slice(0, TAG_START)
+  console.log('encrypt iv', iv)
+  console.log('encrypt tag', tag)
+  console.log('encrypt data', data)
+  const dataArr = Buffer.concat([Buffer.from(iv), Buffer.from(tag), Buffer.from(data)]) //TODO: CUt off tag
+  console.log('encrypt dataArr', dataArr)
+  console.log('encrypt dataArr.length', dataArr.length)
   // const encryptKey = await webCrypto.subtle.importKey(
   //   "raw",
   //   pskEncryptionKey,
@@ -123,31 +147,44 @@ async function encrypt (pskEncryptionKey, ...buffers) { //ASSUMING ASYNC//TODO: 
   //   encryptKey, 
   //   dataBuffer
   // )
-  console.log(cipherText)
-  console.log('end encrypt')
-  return cipherText
+  // console.log(cipherText)
+  // console.log('end encrypt')
+  // return cipherText
+  return dataArr
 }
 
 async function decrypt (pskEncryptionKey, data) { //ASSUMING ASYNC//TODO: Test
   console.log('decrypt')
+  console.log('decrypt data', data)
+  console.log('decrypt data.length', data.length)
 
   const nonce = data.slice(0, IV_LENGTH)
-  const tag = data.slice(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH)
-  const encrypted = data.slice(IV_LENGTH + AUTH_TAG_LENGTH)
-  console.log(nonce)
-  console.log('tag', tag)
-  console.log('encrypted', encrypted)
-  
-  webCrypto.subtle.decrypt(
-    {
-      name: ENCRYPTION_ALGORITHM,
-      iv: ArrayBuffer(12), //The initialization vector you used to encrypt
-      tagLength: BIT_AUTH_TAG_LENGTH
-    },
-    key, //from generateKey or importKey above
-    data //ArrayBuffer of the data
+  const TAG_LENGTH = 2
+  const tag = data.slice(IV_LENGTH, IV_LENGTH + TAG_LENGTH)
+  const encrypted = data.slice(IV_LENGTH + TAG_LENGTH)
+  console.log('decrypt nonce',nonce)
+  console.log('decrypt tag', tag)
+  console.log('decrypt encrypted', encrypted)
+  const iv = webCrypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  console.log('iv', iv) 
+  const alg = { name: ENCRYPTION_ALGORITHM, iv: nonce, tagLength: BIT_AUTH_TAG_LENGTH } 
+  const key = await webCrypto.subtle.importKey(
+    'raw', 
+    pskEncryptionKey, 
+    alg, 
+    false, 
+    ["encrypt", "decrypt"]
   )
-  return 'todo'
+  console.log('decrypt key', key) 
+  const testBuffer = Buffer.from('cccc')
+  const decryptedData = await webCrypto.subtle.decrypt(
+    alg,
+    key, //from generateKey or importKey above
+    testBuffer
+    // Buffer.from(encrypted) //ArrayBuffer of the data
+  )
+  console.log('decrypt decryptedData', decryptedData)
+  return decryptedData
 }
 
 // Tested indirectly by other functions, not directly accessed by STREAM

@@ -32,7 +32,7 @@ describe('stream crypto lib test', async function() {
     app.listen(port) 
     console.log(`Server Listening at http://localhost:${port}`)
     browser = await puppeteer.launch({
-      // headless: false,
+      headless: false,
     })
     page = await browser.newPage()
     await page.goto(`http://localhost:${port}/test/static/index.html`)
@@ -154,32 +154,146 @@ describe('stream crypto lib test', async function() {
     assert.deepEqual(nodeHashArray, webHashArray) 
   })
 
-  it.only('encrypt', async function() {
-    const bufA = Buffer.from('This is the secret nuclear bomb codes')
-    const bufB = Buffer.from('The Secret is: I need invite code!!')
+  it('encrypt - decrypt nodejs', async function() {
+    const moneyPacket = new streamPacket.Packet(22, 14, 5, [
+      new streamPacket.StreamMoneyFrame(1, 1),
+      new streamPacket.StreamMoneyFrame(2, 2)
+    ])
+    const serializedPacket = moneyPacket._serialize()
+    const token = Buffer.from('connectionid', 'ascii')
+    const secret = streamCrypto.generateRandomCondition()
 
-  
-    const moneyPacketV0 = new PacketV0.Packet(0, 14, 5, [
-      new PacketV0.StreamMoneyFrame(1, 1),
-      new PacketV0.StreamMoneyFrame(2, 2)
+    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    const nodePskKey = streamCrypto.generatePskEncryptionKey(nodeSharedSecret)
+
+    const nodeEncryptedData = await streamCrypto.encrypt(nodePskKey, serializedPacket)
+    const nodeDecryptedData = await streamCrypto.decrypt(nodePskKey, nodeEncryptedData)
+    
+    const decryptedPacket = streamPacket.Packet._deserializeUnencrypted(nodeDecryptedData) 
+    assert.deepEqual(moneyPacket, decryptedPacket)
+  })
+
+  it.only('encrypt - decrypt web-crypto', async function() {
+    const moneyPacket = new streamPacket.Packet(22, 14, 5, [
+      new streamPacket.StreamMoneyFrame(1, 1),
+      new streamPacket.StreamMoneyFrame(2, 2)
     ])
 
+    console.log('moneyPacket', moneyPacket.sequence.toString())
+    const serializedPacket = moneyPacket._serialize()
+    console.log('serializedPacket', serializedPacket.buffer)
+
+    const token = Buffer.from('connectionid', 'ascii')
+    const secret = streamCrypto.generateRandomCondition()
+    console.log('buffers', serializedPacket) 
+    const arrBuffers = Array.from(serializedPacket) 
+    const webDecryptedData = await page.evaluate(async (secret, token, buffers) => {
+      console.log('buffers', buffers)
+      // console.log('buffers.buffer', Buffer.from(buffers))
+      // const arrBuf = Array.from(buffers)
+      // console.log('arrBuf', arrBuf)
+      const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+      const pskKey = await generatePskEncryptionKey(webSharedSecret)
+      const webEncryptedData = await encrypt(pskKey, buffers)
+      return await decrypt(pskKey, webEncryptedData)
+    // }, secret, token, serializedPacket)
+    }, secret, token, arrBuffers)
+
+    console.log('decryptedData', webDecryptedData)
+    const decryptedPacket = streamPacket.Packet._deserializeUnencrypted(webDecryptedData) 
+
+    console.log('deserializedData', decryptedPacket.sequence.toString())
+    assert.deepEqual(moneyPacket, decryptedPacket)
+  })
+
+  it('encrypt web-crypto - decrypt nodejs', async function() {
+    const moneyPacket = new streamPacket.Packet(22, 14, 5, [
+      new streamPacket.StreamMoneyFrame(1, 1),
+      new streamPacket.StreamMoneyFrame(2, 2)
+    ])
+
+    console.log('moneyPacket', moneyPacket.sequence.toString())
 
     const token = Buffer.from('connectionid', 'ascii')
     const secret = streamCrypto.generateRandomCondition()
 
     const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
     const nodePskKey = streamCrypto.generatePskEncryptionKey(nodeSharedSecret)
-    const nodeEncryptedData = streamCrypto.encrypt(nodePskKey, dataBuffers) 
+    const serializedPacket = moneyPacket._serialize()
+    const nodeEncryptedData = await streamCrypto.encrypt(nodePskKey, serializedPacket)
 
-    const webEncryptedData = await page.evaluate(async (secret, token, buffers) => {
-      const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
-      const pskKey = await generatePskEncryptionKey(webSharedSecret)
-      return encrypt(pskKey, buffers)
-    }, secret, token, dataBuffers)
+    const nodeDecryptedData = await streamCrypto.decrypt(nodePskKey, nodeEncryptedData)
+    const decryptedPacket = streamPacket.Packet._deserializeUnencrypted(nodeDecryptedData) 
+
+    console.log('deserializedData', decryptedPacket.sequence.toString())
+    assert.deepEqual(moneyPacket, decryptedPacket)
+    // const webEncryptedData = await page.evaluate(async (secret, token, buffers) => {
+    //   const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+    //   const pskKey = await generatePskEncryptionKey(webSharedSecret)
+    //   return encrypt(pskKey, buffers)
+    // }, secret, token, dataBuffers)
     
-    console.log('nodeEncryptedData', nodeEncryptedData)
-    console.log('webEncryptedData', webEncryptedData)
+    // console.log('nodeEncryptedData', nodeEncryptedData)
+    // console.log('webEncryptedData', webEncryptedData)
+
+
+
+    // const token = Buffer.from('connectionid', 'ascii')
+    // const secret = streamCrypto.generateRandomCondition()
+    // const data = Buffer.from('This is super secret data')
+
+    // const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    // const nodeFulfillmentKey = streamCrypto.generateFulfillmentKey(nodeSharedSecret)
+    // const nodeFulfillment = streamCrypto.generateFulfillment(nodeFulfillmentKey, data)
+    // const nodeHash = streamCrypto.hash(nodeFulfillment)
+
+    // const webHash = await page.evaluate(async (secret, token, data) => {
+    //   const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+    //   const fulfillmentKey = await generateFulfillmentKey(webSharedSecret)
+    //   const fulfillment = await generateFulfillment(fulfillmentKey, data)
+    //   return await hash(fulfillment)
+    // }, secret, token, data)
+   
+    // console.log('nodeHash', nodeHash)
+    // console.log('webHash', webHash)
+
+    // const nodeHashArray = bufToArray(nodeHash)
+    // const webHashArray = bufToArray(webHash)
+    // console.log('nodeKeyArray', nodeHashArray)
+    // console.log('webKeyArray', webHashArray)
+    // assert.deepEqual(nodeHashArray, webHashArray) 
+  })
+
+  it('encrypt nodejs - decrypt web-crypto', async function() {
+  
+    const moneyPacket = new streamPacket.Packet(22, 14, 5, [
+      new streamPacket.StreamMoneyFrame(1, 1),
+      new streamPacket.StreamMoneyFrame(2, 2)
+    ])
+
+    console.log('moneyPacket', moneyPacket.sequence.toString())
+
+    const token = Buffer.from('connectionid', 'ascii')
+    const secret = streamCrypto.generateRandomCondition()
+
+    const nodeSharedSecret = streamCrypto.generateSharedSecretFromToken(secret, token) 
+    const nodePskKey = streamCrypto.generatePskEncryptionKey(nodeSharedSecret)
+    const serializedPacket = moneyPacket._serialize()
+    const nodeEncryptedData = await streamCrypto.encrypt(nodePskKey, serializedPacket)
+
+    const nodeDecryptedData = await streamCrypto.decrypt(nodePskKey, nodeEncryptedData)
+    const decryptedPacket = streamPacket.Packet._deserializeUnencrypted(nodeDecryptedData) 
+
+    console.log('deserializedData', decryptedPacket.sequence.toString())
+    assert.deepEqual(moneyPacket, decryptedPacket)
+    // const webEncryptedData = await page.evaluate(async (secret, token, buffers) => {
+    //   const webSharedSecret = await generateSharedSecretFromTokenAsync(secret, token)
+    //   const pskKey = await generatePskEncryptionKey(webSharedSecret)
+    //   return encrypt(pskKey, buffers)
+    // }, secret, token, dataBuffers)
+    
+    // console.log('nodeEncryptedData', nodeEncryptedData)
+    // console.log('webEncryptedData', webEncryptedData)
 
 
 
